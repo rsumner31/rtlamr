@@ -170,6 +170,15 @@ func (rcvr *Receiver) Run() {
 				sampleBuf.Write(block)
 			}
 
+			// If dumping samples, discard the oldest block from the buffer if
+			// it's full and write the new block to it.
+			if *sampleFilename != os.DevNull {
+				if sampleBuf.Len() > rcvr.p.Cfg().BufferLength<<1 {
+					io.CopyN(ioutil.Discard, sampleBuf, int64(len(block)))
+				}
+				sampleBuf.Write(block)
+			}
+
 			pktFound := false
 			indices := rcvr.p.Dec().Decode(block)
 
