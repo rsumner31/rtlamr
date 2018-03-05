@@ -134,10 +134,12 @@ func NewReceiver(blockSize int) (rcvr Receiver) {
 
 func (rcvr *Receiver) Close() {
 	rcvr.SDR.Close()
-	rcvr.pd.Close()
+	rcvr.pktDecoder.Close()
 }
 
 func (rcvr *Receiver) Run() {
+	cfg := rcvr.pktConfig
+
 	// Setup signal channel for interruption.
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint)
@@ -152,14 +154,10 @@ func (rcvr *Receiver) Run() {
 		tLimit = time.After(config.TimeLimit)
 	}
 
-	start := time.Now()
 	for {
 		// Exit on interrupt or time limit, otherwise receive.
 		select {
 		case <-sigint:
-			return
-		case <-tLimit:
-			fmt.Println("Time Limit Reached:", time.Since(start))
 			return
 		default:
 			// Rotate sample buffer.
