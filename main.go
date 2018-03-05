@@ -140,7 +140,6 @@ func (rcvr *Receiver) Run() {
 				log.Println("Error reading samples: ", err)
 				continue
 			}
-			blockCh <- block
 		}
 	}()
 
